@@ -11,6 +11,7 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text bestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -18,22 +19,26 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
     // Start is called before the first frame update
     void Start()
     {
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
-        int[] pointCountArray = new [] {1,1,2,2,5,5};
-        for (int i = 0; i < LineCount; ++i)
+        int[] pointCountArray = new[] { 1, 1, 2, 2, 5, 5 };
+
+        if (SceneManager.GetActiveScene().name == "main")
         {
-            for (int x = 0; x < perLine; ++x)
+            bestScoreText.text = Name.Instance.bestScoreText;
+
+            for (int i = 0; i < LineCount; ++i)
             {
-                Vector3 position = new Vector3(-1.5f + step * x, 2.5f + i * 0.3f, 0);
-                var brick = Instantiate(BrickPrefab, position, Quaternion.identity);
-                brick.PointValue = pointCountArray[i];
-                brick.onDestroyed.AddListener(AddPoint);
+                for (int x = 0; x < perLine; ++x)
+                {
+                    Vector3 position = new Vector3(-1.5f + step * x, 2.5f + i * 0.3f, 0);
+                    var brick = Instantiate(BrickPrefab, position, Quaternion.identity);
+                    brick.PointValue = pointCountArray[i];
+                    brick.onDestroyed.AddListener(AddPoint);
+                }
             }
         }
     }
@@ -65,12 +70,25 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
+        Debug.Log(m_Points);
         ScoreText.text = $"Score : {m_Points}";
     }
 
     public void GameOver()
     {
+        if(m_Points > Name.Instance.best_points)
+        {
+            ChangeBestScore();
+        }
         m_GameOver = true;
         GameOverText.SetActive(true);
+    }
+
+    public void ChangeBestScore()
+    {
+        Name.Instance.best_points = m_Points;
+        Name.Instance.bestScoreText = "Best Score : " + Name.Instance.nameOfPlayer + " : " + Name.Instance.best_points;
+        bestScoreText.text = Name.Instance.bestScoreText;
+        Name.Instance.SaveText();
     }
 }
